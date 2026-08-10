@@ -7,7 +7,7 @@ from threading import Thread
 from time import sleep
 from bs4 import BeautifulSoup
 import requests
-import pickle
+
 
 
 load_dotenv(dotenv_path="key.env")
@@ -17,15 +17,26 @@ bot = telebot.TeleBot(TOKEN)
 print("The bot is running! Check it out on https://t.me/Horoscope_cifra_bot")
 
 
-def schedule_checker():
-    while True:
-        schedule.run_pending()
-        sleep(1)
+# def schedule_checker():
+#     while True:
+#         schedule.run_pending()
+#         sleep(1)
+
+@bot.message_handler(content_types=["text"])
+def reply(message):
+    bot.send_message(message.chat.id, message.text)
 
 
 @bot.message_handler(commands=['start', 'help'])
 def help_command(message):
     bot.send_message(message.chat.id, HELP)
+
+
+
+# @bot.message_handler(commands=["intro"])
+# def set_sign(message):
+
+
 
 
 # @bot.message_handler(commands=["intro"])
@@ -60,6 +71,6 @@ def help_command(message):
 
 # schedule.every().minute.do(SENDING_FUNCTION)
 
-Thread(target=schedule_checker).start()
+# Thread(target=schedule_checker).start()
 
 bot.infinity_polling()
