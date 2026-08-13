@@ -1,13 +1,13 @@
 from info import *
 import telebot
-from dotenv import load_dotenv, dotenv_values
+from dotenv import load_dotenv
 import os
 import schedule
 from threading import Thread
 from time import sleep
-from bs4 import BeautifulSoup
-import requests
 import pickle
+from user import User
+from prophecies.requesting_horoblocks import get_horoscope
 
 
 load_dotenv(dotenv_path="key.env")
@@ -26,7 +26,9 @@ except Exception:
 
 @bot.message_handler(commands=["check"])
 def check(message):
-    print(users)
+    global users
+    for usr in users.values():
+        print(usr.id)
 
 
 @bot.message_handler(commands=["all_signs"])
@@ -37,7 +39,11 @@ def all_signs(message):
 @bot.message_handler(commands=["sign"])
 def show_sign(message):
     print(users)
-    bot.send_message(message.chat.id, users.get(message.chat.id, "Такого пользователя пока нет"))
+    usr = users.get(message.chat.id)
+    if usr is None:
+        bot.send_message(message.chat.id, "Такого пользователя пока нет")
+    else:
+        bot.send_message(message.chat.id, usr.sign)
 
 
 @bot.message_handler(commands=["intro"])
@@ -51,9 +57,8 @@ def set_sign(message):
         _, sign, _ = message.text.split()
     except ValueError:
         _, sign = message.text.split()
-
     if sign.capitalize() in signs_zod:
-        users[message.chat.id] = sign.capitalize()
+        users[message.chat.id] = User(message.chat.id, sign.capitalize())
         with open("users.bin", "wb") as file:
             pickle.dump(users, file)
         bot.send_message(message.chat.id, "Хорошо, запомнил")
@@ -83,13 +88,12 @@ def schedule_checker():
         schedule.run_pending()
         sleep(1)
 
-
 def SENDING_FUNCTION():
     global users
     for usr in users:
         deleted = False
         try:
-            bot.send_message(usr, users.get(usr))
+            bot.send_message(usr, users.get(usr).prophecy)
         except Exception:
             print(Exception)
             deleted = True
@@ -99,8 +103,26 @@ def SENDING_FUNCTION():
                     pickle.dump(users, file)
         deleted = False
 
+def creating_prophecies():
+    global users
+    for id, usr in users.items():
+        usr.prophecy = get_horoscope(usr.url)
 
-schedule.every().day.at('10:15:00').do(SENDING_FUNCTION)
+@bot.message_handler(commands=["гороскоп"])
+def send_info(message):
+    usr = users.get(message.chat.id)
+    if usr:
+        bot.send_message(message.chat.id, usr.prophecy)
+    else:
+        bot.send_message(message.chat.id, "Я пока не знаю кто Вы")
+
+# schedule.every(3).minutes.do(creating_prophecies)
+
+# schedule.every(5).minutes.do(SENDING_FUNCTION)
+
+schedule.every().day.at("10:00:00").do(creating_prophecies)
+
+schedule.every().day.at('10:30:00').do(SENDING_FUNCTION)
 
 Thread(target=schedule_checker).start()
 

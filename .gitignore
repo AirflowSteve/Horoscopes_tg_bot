@@ -7,6 +7,7 @@ wheels/
 *.egg-info
 *.env
 *.bin
+*.txt
 init.py
 # Virtual environments
 .venv
