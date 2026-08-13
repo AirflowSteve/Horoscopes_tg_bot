@@ -6,28 +6,27 @@ class User:
         self.sign = sign
         match self.sign:
             case "Овен":
-                self.url = URLS["ARIES_URL"]
+                self.url = "ARIES_URL"
             case "Телец":
-                self.url = URLS["TAURUS_URL"]
+                self.url = "TAURUS_URL"
             case "Близнецы":
-                self.url = URLS["GEMINI_URL"]
+                self.url = "GEMINI_URL"
             case "Рак":
-                self.url = URLS["CANCER_URL"]
+                self.url = "CANCER_URL"
             case "Лев":
-                self.url = URLS["LION_URL"]
+                self.url = "LION_URL"
             case "Дева":
-                self.url = URLS["VIRGO_URL"]
+                self.url = "VIRGO_URL"
             case "Весы":
-                self.url = URLS["LIBRA_URL"]
+                self.url = "LIBRA_URL"
             case "Скорпион":
-                self.url = URLS["SCORPIO_URL"]
+                self.url = "SCORPIO_URL"
             case "Стрелец":
-                self.url = URLS["SAGITTARIUS_URL"]
+                self.url = "SAGITTARIUS_URL"
             case "Козерог":
-                self.url = URLS["CAPRICORN_URL"]
+                self.url = "CAPRICORN_URL"
             case "Водолей":
-                self.url = URLS["AQUARIUS_URL"]
+                self.url = "AQUARIUS_URL"
             case "Рыбы":
-                self.url = URLS["PISCES_URL"]
+                self.url = "PISCES_URL"
 
-        self.prophecy = get_horoscope(self.url)

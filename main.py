@@ -7,7 +7,7 @@ from threading import Thread
 from time import sleep
 import pickle
 from user import User
-from prophecies.requesting_horoblocks import get_horoscope
+from prophecies.requesting_horoblocks import get_horoscope, URLS
 
 
 load_dotenv(dotenv_path="key.env")
@@ -22,6 +22,13 @@ try:
 except Exception:
     print(Exception)
     users = {}
+
+try:
+    with open("prophecies/horoscopes.bin", "rb") as file:
+        horoscopes = pickle.load(file)
+except Exception:
+    print(Exception)
+    horoscopes = {}
 
 
 @bot.message_handler(commands=["check"])
@@ -90,35 +97,44 @@ def schedule_checker():
 
 def SENDING_FUNCTION():
     global users
+    deleted_usrs = []
     for usr in users:
         deleted = False
         try:
-            bot.send_message(usr, users.get(usr).prophecy)
+            bot.send_message(usr, horoscopes[users[usr].url])
         except Exception:
-            print(Exception)
             deleted = True
-    if deleted:
+        if deleted:
+            deleted_usrs.append(usr)
+            deleted = False
+    for usr in deleted_usrs:
         del users[usr]
-        with open("users.bin", "wb") as file:
-                    pickle.dump(users, file)
-        deleted = False
+    with open("users.bin", "wb") as file:
+        pickle.dump(users, file)
+
+
 
 def creating_prophecies():
     global users
-    for id, usr in users.items():
-        usr.prophecy = get_horoscope(usr.url)
+    global horoscopes
+    for url in URLS:
+        horoscopes[url] = get_horoscope(URLS[url])
+    with open("prophecies/horoscopes.bin", "wb") as file:
+                pickle.dump(horoscopes, file)
+    
 
 @bot.message_handler(commands=["гороскоп"])
 def send_info(message):
     usr = users.get(message.chat.id)
     if usr:
-        bot.send_message(message.chat.id, usr.prophecy)
+        bot.send_message(message.chat.id, horoscopes[usr.url])
     else:
         bot.send_message(message.chat.id, "Я пока не знаю кто Вы")
 
-# schedule.every(3).minutes.do(creating_prophecies)
+# testing tool (kind of)
 
-# schedule.every(5).minutes.do(SENDING_FUNCTION)
+# schedule.every().minute.do(creating_prophecies)
+# schedule.every().minute.do(SENDING_FUNCTION)
 
 schedule.every().day.at("10:00:00").do(creating_prophecies)
 
